@@ -60,9 +60,13 @@ class callgrind(object):
     def __new__(cls, tag=None):
         if callable(tag):
             return cls._wrap_function(tag)
-        elif not isinstance(tag, str):
+        elif not isinstance(tag, (str, bytes)):
             raise TypeError("tag must be str, got {0}".format(type(tag)))
         obj = object.__new__(cls)
+
+        if isinstance(tag, str):
+            tag = tag.encode('ascii')
+
         obj.tag = tag
         return obj
 
@@ -108,7 +112,6 @@ class callgrind(object):
             @wraps(func)
             def inner(*args, **kwargs):
                 with callgrind(tag):
-                    res = func(*args, **kwargs)
-                return res
+                    return func(*args, **kwargs)
 
         return inner
